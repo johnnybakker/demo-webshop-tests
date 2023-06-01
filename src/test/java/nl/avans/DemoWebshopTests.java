@@ -1,22 +1,24 @@
 package nl.avans;
 
-import static org.junit.Assert.*;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.extension.TestWatcher;
 
 import nl.avans.data.User;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+
 import java.time.Duration;
 import java.util.List;
 
-
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DemoWebshopTests 
 {
 	private final String PATH_LOGIN = "/login";
@@ -41,7 +43,26 @@ public class DemoWebshopTests
 
 	private WebDriver driver = null;
 
-    @Before
+	@RegisterExtension
+    public TestWatcher watcher = new TestWatcher() {
+		@Override
+        public void testSuccessful(ExtensionContext context) {
+            endSession("passed");
+        }
+
+        @Override
+        public void testFailed(ExtensionContext context, Throwable cause) {
+            endSession("failed");
+        }
+
+        private void endSession(String status) {
+			if(driver instanceof RemoteWebDriver) {
+				((RemoteWebDriver)driver).executeScript("sauce:job-result=" + status);
+			}
+        }	
+	};
+
+    @BeforeEach
     public void setUp() throws Exception {
 
 		// Create driver
@@ -52,10 +73,8 @@ public class DemoWebshopTests
 		driver.manage().timeouts().implicitlyWait(implicityWait);
     }
 
-    @After
+    @AfterEach
     public void tearDown() throws Exception {
-
-		// Close session and clear browser cache
 		driver.quit();
 		driver = null;
     }
