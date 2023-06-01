@@ -14,7 +14,7 @@ jobs:
         TEST_PLATFORM_NAME: Windows 10
         TEST_BROWSER_NAME: chrome
         TEST_BROWSER_VERSION: latest
-        SAUCELABS_NAME: Demo webshop tests
+        SAUCELABS_NAME: ${{ github.repository }}
         SAUCELABS_USERNAME: ${{ secrets.SAUCELABS_USERNAME }}
         SAUCELABS_ACCESS_KEY: ${{ secrets.SAUCELABS_ACCESS_KEY }} 
         #SAUCELABS_BUILD: ${{ github.sha }}
