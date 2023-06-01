@@ -26,7 +26,7 @@ public class DemoWebshopTests
 	private final String WEBSHOP_URL_LOGIN = WEBSHOP_URL + PATH_LOGIN;
 	
 	private final String WEBSHOP_TITLE = "Demo Web Shop";
-	private final String WEBSHOP_TITLE_LOGIN = WEBSHOP_TITLE + ". Login";
+	private final String WEBSHOP_TITLE_LOGIN = WEBSHOP_TITLE + ". Logi";
 
 	private final String SELECTOR_HEADER_LINKS = ".header-links";
 	
@@ -36,7 +36,7 @@ public class DemoWebshopTests
 	
 	private final String SELECTOR_LOGIN_FORM = "form[action=\""+PATH_LOGIN+"\"]";
 	private final String SELECTOR_LOGIN_FORM_EMAIL = SELECTOR_LOGIN_FORM + " #Email";
-	private final String SELECTOR_LOGIN_FORM_PASSWORD = SELECTOR_LOGIN_FORM + " #Passwor";
+	private final String SELECTOR_LOGIN_FORM_PASSWORD = SELECTOR_LOGIN_FORM + " #Password";
 	private final String SELECTOR_LOGIN_FORM_SUBMIT = SELECTOR_LOGIN_FORM + " input[type=\"submit\"]";
 
 	@Rule
