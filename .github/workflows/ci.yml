@@ -11,7 +11,7 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-        TEST_PLATFORM_NAME: Windows 11
+        TEST_PLATFORM_NAME: Windows 10
         TEST_BROWSER_NAME: chrome
         TEST_BROWSER_VERSION: latest
         SAUCELABS_NAME: Demo webshop tests
