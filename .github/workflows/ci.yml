@@ -1,0 +1,28 @@
+name: UI Test for DemoWebshop
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    env:
+        SAUCELABS_NAME: ${{ secrets.SAUCELABS_USERNAME }}
+        SAUCELABS_USERNAME: ${{ secrets.SAUCELABS_USERNAME }}
+        SAUCELABS_ACCESS_KEY: ${{ secrets.SAUCELABS_ACCESS_KEY }} 
+        SAUCELABS_BUILD: ${{ secrets.SAUCELABS_BUILD }}
+        SAUCELABS_URL: https://ondemand.eu-central-1.saucelabs.com:443/wd/hub
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: maven
+    - name: Build with Maven
+      run: mvn -B test --file pom.xml
