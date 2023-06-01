@@ -11,7 +11,10 @@ jobs:
 
     runs-on: ubuntu-latest
     env:
-        SAUCELABS_NAME: ${{ secrets.SAUCELABS_USERNAME }}
+        TEST_PLATFORM_NAME: Windows 11
+        TEST_BROWSER_NAME: chrome
+        TEST_BROWSER_VERSION: latest
+        SAUCELABS_NAME: Demo webshop tests
         SAUCELABS_USERNAME: ${{ secrets.SAUCELABS_USERNAME }}
         SAUCELABS_ACCESS_KEY: ${{ secrets.SAUCELABS_ACCESS_KEY }} 
         SAUCELABS_BUILD: ${{ secrets.SAUCELABS_BUILD }}
