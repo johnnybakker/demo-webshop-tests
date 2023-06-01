@@ -21,19 +21,4 @@ public class LocalTestContext extends TestContext {
 	public WebDriver driver() {
 		return _driver;
 	}
-
-	@Override
-	public void destroy() {
-		_driver.quit();
-		_driver = null;
-	}
-
-	@Override
-	protected void failed(Throwable e, Description description) {
-	}
-
-	@Override
-	protected void succeeded(Description description) {
-		
-	}
 }

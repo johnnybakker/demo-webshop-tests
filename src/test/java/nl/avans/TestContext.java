@@ -1,5 +1,7 @@
 package nl.avans;
 
+import java.time.Duration;
+
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.openqa.selenium.WebDriver;
@@ -38,16 +40,26 @@ public abstract class TestContext extends TestWatcher {
 	}
 
 	@Override
-	protected void failed(Throwable e, Description description) {
-		
+	protected void starting(Description description) {
+		// Set the implicit timeout to 500 milliseconds
+		Duration implicityWait = Duration.ofMillis(500);
+
+		var driverOptions = driver().manage();
+		driverOptions.timeouts().implicitlyWait(implicityWait);
+		driverOptions.deleteAllCookies();
 	}
 
 	@Override
-	protected void succeeded(Description description) {
-
+	protected void finished(Description description) {
+		driver().quit();
 	}
 
+	@Override
+	protected void failed(Throwable e, Description description) {}
+	
+	@Override
+	protected void succeeded(Description description) {}
+
 	public abstract WebDriver driver();
-	public abstract void destroy();
 
 }

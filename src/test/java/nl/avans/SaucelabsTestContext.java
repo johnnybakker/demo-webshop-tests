@@ -45,12 +45,6 @@ public class SaucelabsTestContext extends TestContext {
 	}
 
 	@Override
-	public void destroy() {
-		_driver.quit();
-		_driver = null;
-	}
-
-	@Override
 	protected void failed(Throwable e, Description description) {
 		_driver.executeScript("sauce:job-result=failed");
 	}

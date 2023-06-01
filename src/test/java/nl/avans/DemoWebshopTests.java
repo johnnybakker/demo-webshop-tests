@@ -42,23 +42,6 @@ public class DemoWebshopTests
 	@Rule
 	public TestContext context = TestContext.Create();
 
- 	@Before
-    public void setup() throws Exception {
-
-		// Set the implicit timeout to 500 milliseconds
-		Duration implicityWait = Duration.ofMillis(500);
-		
-		var driverOptions = context.driver().manage();
-		driverOptions.timeouts().implicitlyWait(implicityWait);
-		driverOptions.deleteAllCookies();
-    }
-
-	@After
-	public void destroy() throws Exception {
-		context.destroy();
-		context = null;
-    }
-
 	@Test
 	public void test0_Home() throws Exception {
 		// Open website
