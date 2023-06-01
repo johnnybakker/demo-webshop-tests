@@ -6,6 +6,8 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
+import nl.avans.context.TestContext;
+import nl.avans.data.TestDataProvider;
 import nl.avans.data.User;
 import java.util.List;
 
@@ -17,7 +19,7 @@ public class DemoWebshopTests
 	private final String WEBSHOP_URL_LOGIN = WEBSHOP_URL + PATH_LOGIN;
 	
 	private final String WEBSHOP_TITLE = "Demo Web Shop";
-	private final String WEBSHOP_TITLE_LOGIN = WEBSHOP_TITLE + ". Logi";
+	private final String WEBSHOP_TITLE_LOGIN = WEBSHOP_TITLE + ". Login";
 
 	private final String SELECTOR_HEADER_LINKS = ".header-links";
 	
