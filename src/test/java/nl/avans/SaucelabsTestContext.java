@@ -3,8 +3,6 @@ package nl.avans;
 import java.net.URL;
 import java.util.HashMap;
 
-import org.junit.Rule;
-import org.junit.rules.TestWatcher;
 import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.CapabilityType;
@@ -19,24 +17,12 @@ public class SaucelabsTestContext extends TestContext {
 	public static final String ENV_SAUCELABS_BUILD = "SAUCELABS_BUILD";
 	public static final String ENV_SAUCELABS_URL = "SAUCELABS_URL";
 
+	private SauceLabsDriverOptions _options;
 	private RemoteWebDriver _driver;
 
 	public SaucelabsTestContext() throws Exception {
-		SauceLabsDriverOptions options = SauceLabsDriverOptions.ReadFromEnvironment();
-	
-		MutableCapabilities capabilities = new MutableCapabilities();
-		capabilities.setCapability(CapabilityType.PLATFORM_NAME, PLATFORM_NAME);
-		capabilities.setCapability(CapabilityType.BROWSER_NAME, BROWSER_NAME);
-		capabilities.setCapability(CapabilityType.BROWSER_VERSION, BROWSER_VERSION);
-		capabilities.setCapability("sauce:options", new HashMap<>(){{ 
-			put("username", options.username);
-			put("accessKey", options.accessKey);
-			put("build", options.build);
-			put("name", options.name);
-		}});
-
-		URL url = new URL(options.url);
-		_driver = new RemoteWebDriver(url, capabilities);
+		_options = SauceLabsDriverOptions.ReadFromEnvironment();
+		_driver = null;
 	}
 
 	@Override
@@ -45,30 +31,49 @@ public class SaucelabsTestContext extends TestContext {
 	}
 
 	@Override
+	protected void starting(Description description) {
+
+		String name = description.getClassName() + "." + description.getMethodName();
+
+		MutableCapabilities capabilities = new MutableCapabilities();
+		capabilities.setCapability(CapabilityType.PLATFORM_NAME, PLATFORM_NAME);
+		capabilities.setCapability(CapabilityType.BROWSER_NAME, BROWSER_NAME);
+		capabilities.setCapability(CapabilityType.BROWSER_VERSION, BROWSER_VERSION);
+		capabilities.setCapability("sauce:options", new HashMap<>(){{ 
+			put("username", _options.username);
+			put("accessKey", _options.accessKey);
+			put("build", _options.build);
+			put("name", name);
+		}});
+
+		_driver = new RemoteWebDriver(_options.url, capabilities);
+	}
+
+	@Override
 	protected void failed(Throwable e, Description description) {
+		System.out.println("Sending result failed!");
 		_driver.executeScript("sauce:job-result=failed");
 	}
 
 	@Override
 	protected void succeeded(Description description) {
+		System.out.println("Sending result passed!");
 		_driver.executeScript("sauce:job-result=passed");
 	}
 	
 	static class SauceLabsDriverOptions {
 
-		public String name;
 		public String username;
 		public String accessKey;
 		public String build;
-		public String url;
+		public URL url;
 
 		public static SauceLabsDriverOptions ReadFromEnvironment() throws Exception {
 			SauceLabsDriverOptions options = new SauceLabsDriverOptions();
-			options.name = GetEnvOrThrowFailedToFind(ENV_SAUCELABS_NAME);
 			options.username = GetEnvOrThrowFailedToFind(ENV_SAUCELABS_USERNAME);
 			options.accessKey = GetEnvOrThrowFailedToFind(ENV_SAUCELABS_ACCESS_KEY);
 			options.build = GetEnvOrThrowFailedToFind(ENV_SAUCELABS_BUILD);
-			options.url = GetEnvOrThrowFailedToFind(ENV_SAUCELABS_URL);
+			options.url = new URL(GetEnvOrThrowFailedToFind(ENV_SAUCELABS_URL));
 			return options;
 		}
 

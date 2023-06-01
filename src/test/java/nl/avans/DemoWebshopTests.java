@@ -2,20 +2,11 @@ package nl.avans;
 
 
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.remote.RemoteWebDriver;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
 
 import nl.avans.data.User;
-
-
-import java.time.Duration;
 import java.util.List;
 
 public class DemoWebshopTests 

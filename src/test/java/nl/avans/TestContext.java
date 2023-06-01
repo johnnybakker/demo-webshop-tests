@@ -56,7 +56,7 @@ public abstract class TestContext extends TestWatcher {
 
 	@Override
 	protected void failed(Throwable e, Description description) {}
-	
+
 	@Override
 	protected void succeeded(Description description) {}
 
