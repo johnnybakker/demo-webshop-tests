@@ -1,8 +1,10 @@
 package nl.avans;
 
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 import org.openqa.selenium.WebDriver;
 
-public abstract class TestContext {
+public abstract class TestContext extends TestWatcher {
 
 	protected static final String ENV_TEST_PLATFORM_NAME = "TEST_PLATFORM_NAME";
 	protected static final String ENV_TEST_BROWSER_NAME = "TEST_BROWSER_NAME";
@@ -35,7 +37,17 @@ public abstract class TestContext {
 		}
 	}
 
-	public abstract WebDriver getDriver();
+	@Override
+	protected void failed(Throwable e, Description description) {
+		
+	}
+
+	@Override
+	protected void succeeded(Description description) {
+
+	}
+
+	public abstract WebDriver driver();
 	public abstract void destroy();
 
 }

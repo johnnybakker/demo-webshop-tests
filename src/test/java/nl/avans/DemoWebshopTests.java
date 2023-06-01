@@ -39,19 +39,16 @@ public class DemoWebshopTests
 	private final String SELECTOR_LOGIN_FORM_PASSWORD = SELECTOR_LOGIN_FORM + " #Password";
 	private final String SELECTOR_LOGIN_FORM_SUBMIT = SELECTOR_LOGIN_FORM + " input[type=\"submit\"]";
 
-	private TestContext context = null;
-	private WebDriver driver  = null;
+	@Rule
+	public TestContext context = TestContext.Create();
 
  	@Before
     public void setup() throws Exception {
-		// Create driver
-		context = TestContext.Create();
-		driver = context.getDriver();
-	
+
 		// Set the implicit timeout to 500 milliseconds
 		Duration implicityWait = Duration.ofMillis(500);
 		
-		var driverOptions = driver.manage();
+		var driverOptions = context.driver().manage();
 		driverOptions.timeouts().implicitlyWait(implicityWait);
 		driverOptions.deleteAllCookies();
     }
@@ -59,7 +56,6 @@ public class DemoWebshopTests
 	@After
 	public void destroy() throws Exception {
 		context.destroy();
-		driver = null;
 		context = null;
     }
 
@@ -94,32 +90,32 @@ public class DemoWebshopTests
 	}
 
 	public void open() throws Exception {
-        driver.get(WEBSHOP_URL);
+        context.driver().get(WEBSHOP_URL);
     }
 
     public void homepage() throws Exception {
-        String title = driver.getTitle();
+        String title = context.driver().getTitle();
         Assert.assertEquals(WEBSHOP_TITLE, title);
     }
 
 	public void login(String email, String password) throws Exception {
 		open();
 
-		driver.findElement(By.cssSelector(SELECTOR_LOGIN_LINK)).click();
+		context.driver().findElement(By.cssSelector(SELECTOR_LOGIN_LINK)).click();
 
-		Assert.assertEquals(WEBSHOP_URL_LOGIN, driver.getCurrentUrl());
-		Assert.assertEquals(WEBSHOP_TITLE_LOGIN, driver.getTitle());
+		Assert.assertEquals(WEBSHOP_URL_LOGIN, context.driver().getCurrentUrl());
+		Assert.assertEquals(WEBSHOP_TITLE_LOGIN, context.driver().getTitle());
 
-		driver.findElement(By.cssSelector(SELECTOR_LOGIN_FORM_EMAIL)).sendKeys(email);
-		driver.findElement(By.cssSelector(SELECTOR_LOGIN_FORM_PASSWORD)).sendKeys(password);
-		driver.findElement(By.cssSelector(SELECTOR_LOGIN_FORM_SUBMIT)).click();
+		context.driver().findElement(By.cssSelector(SELECTOR_LOGIN_FORM_EMAIL)).sendKeys(email);
+		context.driver().findElement(By.cssSelector(SELECTOR_LOGIN_FORM_PASSWORD)).sendKeys(password);
+		context.driver().findElement(By.cssSelector(SELECTOR_LOGIN_FORM_SUBMIT)).click();
 
 		homepage();
 
-		Assert.assertEquals(email, driver.findElement(By.cssSelector(SELECTOR_ACCOUNT_LINK)).getText());
+		Assert.assertEquals(email, context.driver().findElement(By.cssSelector(SELECTOR_ACCOUNT_LINK)).getText());
 	}
 
 	public void logout() {
-		driver.findElement(By.cssSelector(SELECTOR_LOGOUT_LINK)).click();
+		context.driver().findElement(By.cssSelector(SELECTOR_LOGOUT_LINK)).click();
 	}
 }

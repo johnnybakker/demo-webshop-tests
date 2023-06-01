@@ -19,7 +19,7 @@ public class SaucelabsTestContext extends TestContext {
 	public static final String ENV_SAUCELABS_BUILD = "SAUCELABS_BUILD";
 	public static final String ENV_SAUCELABS_URL = "SAUCELABS_URL";
 
-	private RemoteWebDriver driver;
+	private RemoteWebDriver _driver;
 
 	public SaucelabsTestContext() throws Exception {
 		SauceLabsDriverOptions options = SauceLabsDriverOptions.ReadFromEnvironment();
@@ -36,35 +36,30 @@ public class SaucelabsTestContext extends TestContext {
 		}});
 
 		URL url = new URL(options.url);
-		driver = new RemoteWebDriver(url, capabilities);
+		_driver = new RemoteWebDriver(url, capabilities);
 	}
 
 	@Override
-	public WebDriver getDriver() {
-		return driver;
+	public WebDriver driver() {
+		return _driver;
 	}
 
 	@Override
 	public void destroy() {
-		watcher = null;
-		driver.quit();
-		driver = null;
+		_driver.quit();
+		_driver = null;
 	}
 
-	@Rule
-    public TestWatcher watcher = new TestWatcher() {
+	@Override
+	protected void failed(Throwable e, Description description) {
+		_driver.executeScript("sauce:job-result=failed");
+	}
 
-		@Override
-		protected void failed(Throwable e, Description description) {
-			driver.executeScript("sauce:job-result=failed");
-		}
-
-        @Override
-        protected void succeeded(Description description) {
-			driver.executeScript("sauce:job-result=passed");
-        }
-	};
-
+	@Override
+	protected void succeeded(Description description) {
+		_driver.executeScript("sauce:job-result=passed");
+	}
+	
 	static class SauceLabsDriverOptions {
 
 		public String name;
