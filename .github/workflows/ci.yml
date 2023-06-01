@@ -17,7 +17,7 @@ jobs:
         SAUCELABS_NAME: Demo webshop tests
         SAUCELABS_USERNAME: ${{ secrets.SAUCELABS_USERNAME }}
         SAUCELABS_ACCESS_KEY: ${{ secrets.SAUCELABS_ACCESS_KEY }} 
-        SAUCELABS_BUILD: ${{ github.event.head_commit.tree.sha }}
+        SAUCELABS_BUILD: ${{ github.sha }}
         SAUCELABS_URL: https://ondemand.eu-central-1.saucelabs.com:443/wd/hub
     steps:
     - uses: actions/checkout@v3
