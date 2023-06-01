@@ -4,17 +4,16 @@ package nl.avans;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.jupiter.api.extension.TestWatcher;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
 
 import nl.avans.data.User;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.time.Duration;
 import java.util.List;
@@ -40,43 +39,28 @@ public class DemoWebshopTests
 	private final String SELECTOR_LOGIN_FORM_PASSWORD = SELECTOR_LOGIN_FORM + " #Password";
 	private final String SELECTOR_LOGIN_FORM_SUBMIT = SELECTOR_LOGIN_FORM + " input[type=\"submit\"]";
 
+	private TestContext context = null;
+	private WebDriver driver  = null;
 
-	private WebDriver driver = null;
-
-	@RegisterExtension
-    public TestWatcher watcher = new TestWatcher() {
-		@Override
-        public void testSuccessful(ExtensionContext context) {
-            endSession("passed");
-        }
-
-        @Override
-        public void testFailed(ExtensionContext context, Throwable cause) {
-            endSession("failed");
-        }
-
-        private void endSession(String status) {
-			if(driver instanceof RemoteWebDriver) {
-				((RemoteWebDriver)driver).executeScript("sauce:job-result=" + status);
-			}
-        }	
-	};
-
-    @BeforeEach
-    public void setUp() throws Exception {
-
+ 	@Before
+    public void setup() throws Exception {
 		// Create driver
-		driver = WebDriverFactory.Create();
+		context = TestContext.Create();
+		driver = context.getDriver();
 	
 		// Set the implicit timeout to 500 milliseconds
 		Duration implicityWait = Duration.ofMillis(500);
-		driver.manage().timeouts().implicitlyWait(implicityWait);
+		
+		var driverOptions = driver.manage();
+		driverOptions.timeouts().implicitlyWait(implicityWait);
+		driverOptions.deleteAllCookies();
     }
 
-    @AfterEach
-    public void tearDown() throws Exception {
-		driver.quit();
+	@After
+	public void destroy() throws Exception {
+		context.destroy();
 		driver = null;
+		context = null;
     }
 
 	@Test
@@ -92,7 +76,7 @@ public class DemoWebshopTests
 
 		// Read valid users from datasource
 		List<User> users = TestDataProvider.instance.readTestData("valid_users.csv", User.class);
-		assertNotEquals(0, users.size());
+		Assert.assertNotEquals(0, users.size());
 
 		// Open website
 		open();
@@ -115,7 +99,7 @@ public class DemoWebshopTests
 
     public void homepage() throws Exception {
         String title = driver.getTitle();
-        assertEquals(WEBSHOP_TITLE, title);
+        Assert.assertEquals(WEBSHOP_TITLE, title);
     }
 
 	public void login(String email, String password) throws Exception {
@@ -123,8 +107,8 @@ public class DemoWebshopTests
 
 		driver.findElement(By.cssSelector(SELECTOR_LOGIN_LINK)).click();
 
-		assertEquals(WEBSHOP_URL_LOGIN, driver.getCurrentUrl());
-		assertEquals(WEBSHOP_TITLE_LOGIN, driver.getTitle());
+		Assert.assertEquals(WEBSHOP_URL_LOGIN, driver.getCurrentUrl());
+		Assert.assertEquals(WEBSHOP_TITLE_LOGIN, driver.getTitle());
 
 		driver.findElement(By.cssSelector(SELECTOR_LOGIN_FORM_EMAIL)).sendKeys(email);
 		driver.findElement(By.cssSelector(SELECTOR_LOGIN_FORM_PASSWORD)).sendKeys(password);
@@ -132,7 +116,7 @@ public class DemoWebshopTests
 
 		homepage();
 
-		assertEquals(email, driver.findElement(By.cssSelector(SELECTOR_ACCOUNT_LINK)).getText());
+		Assert.assertEquals(email, driver.findElement(By.cssSelector(SELECTOR_ACCOUNT_LINK)).getText());
 	}
 
 	public void logout() {

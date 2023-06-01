@@ -1,10 +1,10 @@
 package nl.avans;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.File;
 import java.io.FileReader;
 import java.util.List;
+
+import org.junit.Assert;
 
 import com.opencsv.bean.CsvToBeanBuilder;
 
@@ -23,8 +23,8 @@ public class TestDataProvider {
 		File file = new File(classLoader.getResource(fileName).getFile());
 		String absolutePath = file.getAbsolutePath();
 
-		assertTrue(absolutePath.endsWith(fileName));
-		assertTrue(file.exists());
+		Assert.assertTrue(absolutePath.endsWith(fileName));
+		Assert.assertTrue(file.exists());
 
 		return new CsvToBeanBuilder<T>(new FileReader(file))
 			.withType(clazz)
