@@ -1,7 +1,7 @@
 package nl.avans;
 
 
-import nl.avans.data.ShopItem;
+import nl.avans.data.Product;
 import org.openqa.selenium.By;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -11,10 +11,12 @@ import nl.avans.context.TestContext;
 import nl.avans.data.TestDataProvider;
 import nl.avans.data.User;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Random;
 
@@ -43,6 +45,9 @@ public class DemoWebshopTests {
 	private final String SELECTOR_LOGIN_FORM_EMAIL = SELECTOR_LOGIN_FORM + " #Email";
 	private final String SELECTOR_LOGIN_FORM_PASSWORD = SELECTOR_LOGIN_FORM + " #Password";
 	private final String SELECTOR_LOGIN_FORM_SUBMIT = SELECTOR_LOGIN_FORM + " input[type=\"submit\"]";
+
+	static final String ADD_TO_SHOPPING_CART_OK = "The product has been added to your shopping cart";
+	static final String ADD_TO_SHOPPING_CART_NOK = "Quantity should be positive";
 
 	@Rule
 	public TestContext context = TestContext.Create();
@@ -82,19 +87,23 @@ public class DemoWebshopTests {
 		// Read valid users from datasource
 		List<User> users = TestDataProvider.instance.readTestData("valid_users.csv", User.class);
 		Assert.assertNotEquals(0, users.size());
+		
 		// Open website
 		open();
+		
 		// Test homepage
 		homepage();
+		
 		Random random = new Random();
 		User randomUser = users.get(random.nextInt(users.size()));
+		
 		// Test a random login.
 		login(randomUser);
 
 		// Go to the Cell phones category
 		context.driver().findElement(By.cssSelector(SELECTOR_HEADER_MENU)).click();
 		context.driver().findElement(By.cssSelector(SELECTOR_ELECTRONICS_LINK)).click();
-		WebDriverWait wait = new WebDriverWait(context.driver(), 10);
+		WebDriverWait wait = new WebDriverWait(context.driver(), Duration.ofSeconds(10));
 		wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(SELECTOR_SMARTPHONE_IMAGE_LINK))).click();
 
 		// Select the Smartphone category
@@ -184,40 +193,61 @@ public class DemoWebshopTests {
 	@Test
 	public void test1_AddToCarts() throws Exception {
 		List<User> users = readUsers("valid_users.csv");
+		List<Product> products = readProducts("valid_products.csv");
+		
 		open();
 		homepage();
+		
 		User randomUser = getRandomUser(users);
+		
 		login(randomUser);
-		List<ShopItem> items = ShopItem.getItems();
-		double price1 = items.get(0).getPrice();
-		double price2 = items.get(1).getPrice();
-		double price3 = items.get(2).getPrice();
-		double price4 = items.get(3).getPrice();
-		double price5 = items.get(4).getPrice();
+		navigateToCart();
+		removeItemsFromCart();
 
-		double totalPrice1 = selectCategoryAndAddProductToCart(items.get(0), 3, 15) * price1;
-		double totalPrice2 = selectCategoryAndAddProductToCart(items.get(1), 3, 15) * price2;
-		double totalPrice3 = selectCategoryAndAddProductToCart(items.get(2), 3, 15) * price3;
-		double totalPrice4 = selectCategoryAndAddProductToCart(items.get(3), 3, 15) * price4;
-		double totalPrice5 = selectCategoryAndAddProductToCart(items.get(4), 3, 15) * price4;
-		double total = totalPrice1 + totalPrice2 + totalPrice3 + totalPrice4 + totalPrice5;
+		Random random = new Random(System.currentTimeMillis());
+		
+		double totalPrice = 0;
+		
+		while(totalPrice < 5000) {
+
+			int index = random.nextInt(products.size());
+			int orderAmount = random.nextInt(5);
+			
+			Product product = products.get(index);
+			int actualOrderAmount = addProductToShoppingCart(product, orderAmount);
+
+			totalPrice += product.getPrice() * actualOrderAmount;
+		}
 
 		navigateToCart();
-		double cartTotal = getCartTotal();
+		
+		double cartTotalPrice = getCartTotal();
+		Assert.assertEquals(totalPrice, cartTotalPrice, 0.1);  // Tolerance is set to 0.01
+		
 		removeItemsFromCart();
 		logout();
-		Assert.assertEquals(total, cartTotal, 0.1);  // Tolerance is set to 0.01
 	}
+
 	private double getCartTotal() {
-		WebDriverWait wait = new WebDriverWait(context.driver(), 10);
-		WebElement cartTotalElement = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("body > div.master-wrapper-page > div.master-wrapper-content > div.master-wrapper-main > div > div > div.page-body > div > form > div.cart-footer > div.totals > div.total-info > table > tbody > tr:nth-child(4) > td.cart-total-right > span > span > strong")));
-		String cartTotalText = cartTotalElement.getText();
-		return Double.parseDouble(cartTotalText.replace(",", "")); // Parse the total as a double
+
+		WebDriverWait wait = new WebDriverWait(context.driver(), Duration.ofSeconds(10));
+
+		By totalPriceSelector = By.cssSelector(".product-price.order-total > strong");
+		String cartTotalText = wait.until(ExpectedConditions.presenceOfElementLocated(totalPriceSelector)).getText();
+	
+		return Double.parseDouble(cartTotalText.replace(",", ".")); // Parse the total as a double
 	}
+
 	private List<User> readUsers(String filename) throws Exception {
 		List<User> users = TestDataProvider.instance.readTestData(filename, User.class);
 		Assert.assertNotEquals(0, users.size());
 		return users;
+	}
+
+	private List<Product> readProducts(String filename) throws Exception {
+		List<Product> products = TestDataProvider.instance.readTestData(filename, Product.class);
+		Assert.assertNotEquals(0, products.size());
+		return products;
 	}
 
 	private User getRandomUser(List<User> users) {
@@ -225,54 +255,85 @@ public class DemoWebshopTests {
 		return users.get(random.nextInt(users.size()));
 	}
 
-	private int selectCategoryAndAddProductToCart(ShopItem item, int low, int max) {
-		int randomNumber;
-		WebDriverWait wait = new WebDriverWait(context.driver(), 10);
-		wait.until(ExpectedConditions.elementToBeClickable(By.linkText(item.getCategory()))).click();
-		if (!item.getSubCategorySelector().isEmpty()) {
-			wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(item.getSubCategorySelector()))).click();
+	/**
+	 * @param item the actual item to order
+	 * @param quantity order quantity
+	 * @return number of items ordered
+	 */
+	private int addProductToShoppingCart(Product item, int quantity) {
+
+		//Wait for element waiter
+		WebDriverWait wait = new WebDriverWait(context.driver(), Duration.ofSeconds(10));
+		
+		// Find category url link
+		By categorySelector = By.cssSelector(String.format(".top-menu [href=\"/%s\"]", item.getCategory()));
+		wait.until(ExpectedConditions.elementToBeClickable(categorySelector)).click();
+
+		// If it has a sub category then navigate further
+		if(item.getSubCategory().isEmpty() == false) {
+			By subcategorySelector = By.cssSelector(String.format(".sub-category-item [href=\"/%s\"]", item.getSubCategory()));
+			wait.until(ExpectedConditions.elementToBeClickable(subcategorySelector)).click();
 		}
-		wait.until(ExpectedConditions.elementToBeClickable(By.linkText(item.getProductName()))).click();
+		
+		// Find item link and click it
+		By itemLink = By.cssSelector(String.format("[data-productid=\"%d\"] .product-title > a", item.getId()));
+		wait.until(ExpectedConditions.elementToBeClickable(itemLink)).click();
+		
 		// Check if the item is out of stock.
-		List<WebElement> availabilityLabels = context.driver().findElements(By.cssSelector(".stock .value"));
+		By stockSelector = By.cssSelector(".stock .value");
+		
+		WebElement availabilityLabel = null;
 
-		// Check if we found an availability label and if the item is out of stock.
-		if (availabilityLabels.isEmpty() || !"Out of stock".equals(availabilityLabels.get(0).getText())) {
-			// Item is in stock, so it's safe to set the quantity.
-			WebElement quantityInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.name(item.getQuantityInputId())));
-			quantityInput.clear();
-			randomNumber = RandomNumbers(low, max);
-			quantityInput.sendKeys(String.valueOf(randomNumber));
-			JavascriptExecutor executor = (JavascriptExecutor) context.driver();
-			executor.executeScript("$('#" + item.getQuantityInputId() + "').keydown(function(event) { if (event.keyCode == 13) { $('#" + item.getAddToCartButtonId() + "').click(); return false; } });");
-			wait.until(ExpectedConditions.elementToBeClickable(By.id(item.getAddToCartButtonId()))).click();
-			String addedToCartMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#bar-notification > p"))).getText();
-			Assert.assertTrue(addedToCartMessage.contains("The product has been added to your shopping cart"));
-		}else{
-			return 0;
+		try {
+			availabilityLabel = context.driver().findElement(stockSelector);
+		} catch(NoSuchElementException ex) {
+
 		}
-			return randomNumber;
+
+		// If this is null then there is no stock
+		if(availabilityLabel != null) 
+		{
+			boolean isAvailable = availabilityLabel.getText().equalsIgnoreCase("in stock");
+
+			// Compare availability
+			Assert.assertEquals(item.isAvailable(), isAvailable);
+	
+			// Do not add any item to the cart
+			if(item.isAvailable() == false) return 0;
+		}
+
+
+		if(item.getCategory().equalsIgnoreCase("gift-cards")){
+
+			By recipientInputSelector = By.cssSelector(String.format("input[name=\"giftcard_%d.RecipientName\"]", item.getId()));
+			WebElement recipientInput = wait.until(ExpectedConditions.presenceOfElementLocated(recipientInputSelector));
+			
+			recipientInput.clear();
+			recipientInput.sendKeys("Johnny Bakker");
+		}
+			
+		// Item is in stock, so it's safe to set the quantity.
+		By quantityInputSelector = By.cssSelector(String.format("input[name=\"addtocart_%d.EnteredQuantity\"]", item.getId()));
+		WebElement quantityInput = wait.until(ExpectedConditions.presenceOfElementLocated(quantityInputSelector));
+			
+		// Clear quantity input field
+		quantityInput.clear();
+
+		// Set quantity
+		quantityInput.sendKeys(String.valueOf(quantity));
+
+		By addToCartButtonSelector = By.id(String.format("add-to-cart-button-%d", item.getId()));
+		wait.until(ExpectedConditions.elementToBeClickable(addToCartButtonSelector)).click();
+			
+		By notificationBarTextSelector = By.cssSelector("#bar-notification > p");
+		String notificationText = wait.until(ExpectedConditions.visibilityOfElementLocated(notificationBarTextSelector)).getText();
+		
+		// expected notification text
+		String expectedNotificationText = quantity > 0 ? ADD_TO_SHOPPING_CART_OK : ADD_TO_SHOPPING_CART_NOK;
+		Assert.assertEquals(expectedNotificationText, notificationText);
+
+		return quantity;
 	}
-
-	public int RandomNumbers(int low, int max) {
-		if (max < low) {
-			low = 2;
-			max = 12;
-		}
-
-		if (low < 0 || max < 0) {
-			low = 2;
-			max = 12;
-
-		}else{
-			Random rand = new Random();
-			int randomNum = rand.nextInt((max - low) + 1) + low;
-			return randomNum;
-		}
-		return low;
-	}
-
-
 
 	private void navigateToCart() {
 		context.driver().findElement(By.cssSelector(SELECTOR_HEADER_MENU)).click();
@@ -280,13 +341,23 @@ public class DemoWebshopTests {
 	}
 
 	private void removeItemsFromCart() {
-		WebDriverWait wait = new WebDriverWait(context.driver(), 10);
+		
+		WebDriverWait wait = new WebDriverWait(context.driver(), Duration.ofSeconds(10));
+		
+		By summary = By.cssSelector(".order-summary-content");
+		String summaryText = context.driver().findElement(summary).getText();
+		
+		if (summaryText.equalsIgnoreCase("Your Shopping Cart is empty!")) {
+			return;
+		}
+
 		List<WebElement> checkboxes = context.driver().findElements(By.name("removefromcart"));
 		for (WebElement checkbox : checkboxes) {
 			if (!checkbox.isSelected()) {
 				checkbox.click();
 			}
 		}
+
 		context.driver().findElement(By.name("updatecart")).click();
 		//String removedFromCartMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(BAR_NOTIFICATION))).getText();
 		//Assert.assertTrue(removedFromCartMessage.contains("Your Shopping Cart is empty!"));

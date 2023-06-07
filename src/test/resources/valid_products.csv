@@ -1,0 +1,30 @@
+id;name;category;subcategory;available;price
+13;Computing and Internet;books;;true;10.00
+79;Copy of Computing and Internet EX;books;;false;10.00
+22;Health Book;books;;true;10.00
+27;Science;books;;false;51.00
+31;14.1-inch Laptop;computers;notebooks;true;1590.00
+66;TCP Instructor Led Training;computers;accessories;true;9000.00
+65;TCP Public Complete;computers;accessories;true;3000.00
+62;TCP Public MT/AT;computers;accessories;true;1700.00
+64;TCP Public RPA/TCD;computers;accessories;true;1700.00
+61;TCP Self-Paced Training;computers;accessories;true;400.00
+67;TCP Self-Paced Training additional month;computers;accessories;true;400.00
+43;Smartphone;electronics;cell-phones;true;100.00
+15;Used phone;electronics;cell-phones;false;5.00
+80;Phone Cover;electronics;cell-phones;true;10.00
+5;50's Rockabilly Polka Dot Top JR Plus Size;apparel-shoes;;true;11.00
+28;Blue and green Sneaker;apparel-shoes;;true;11.00
+36;Blue Jeans;apparel-shoes;;true;1.00
+40;Casual Golf Belt;apparel-shoes;;true;1.00
+24;Custom T-Shirt;apparel-shoes;;false;15.00
+47;Denim Short with Rhinestones;apparel-shoes;;false;10.00
+29;Genuine Leather Handbag with Cell Phone Holder & Many Pockets;apparel-shoes;;true;35.00
+53;3rd Album;digital-downloads;;true;1.00
+51;Music 2;digital-downloads;;true;10.00
+52;Music 2;digital-downloads;;true;3.00
+71;Create Your Own jewelry;jewelry;;true;100.00
+14;Black & White Diamond Heart;jewelry;;true;130.00
+25;Diamond Pave Earrings;jewelry;;false;350.00
+3;$50 Physical Gift Card;gift-cards;;true;50.00
+4;$100 Physical Gift Card;gift-cards;;true;100.00
