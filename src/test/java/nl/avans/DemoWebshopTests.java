@@ -284,10 +284,12 @@ public class DemoWebshopTests {
 		
 		WebElement availabilityLabel = null;
 
-		try {
-			availabilityLabel = context.driver().findElement(stockSelector);
-		} catch(NoSuchElementException ex) {
+	
+		List<WebElement> stockElements = context.driver().findElements(stockSelector);
+		Assert.assertTrue(stockElements.size() < 2);
 
+		if(stockElements.size() == 1) {
+			availabilityLabel = stockElements.get(0);
 		}
 
 		// If this is null then there is no stock
