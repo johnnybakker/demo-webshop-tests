@@ -188,19 +188,32 @@ public class DemoWebshopTests {
 		homepage();
 		User randomUser = getRandomUser(users);
 		login(randomUser);
-		//selectCategoryAndAddProductToCart("Electronics", "div.sub-category-grid div.item-box:nth-child(2) a[href=\"/cell-phones\"]","Smartphone", "addtocart_43.EnteredQuantity", "add-to-cart-button-43");
-		//selectCategoryAndAddProductToCart("Apparel & Shoes","", "Blue Jeans", "addtocart_36.EnteredQuantity", "add-to-cart-button-36");
 		List<ShopItem> items = ShopItem.getItems();
-		selectCategoryAndAddProductToCart(items.get(0), 1, 10);
+		double price1 = items.get(0).getPrice();
+		double price2 = items.get(1).getPrice();
+		double price3 = items.get(2).getPrice();
+		double price4 = items.get(3).getPrice();
+		double price5 = items.get(4).getPrice();
 
-		selectCategoryAndAddProductToCart(items.get(1), 4, 5);
-
-		selectCategoryAndAddProductToCart(items.get(2), 4, 5);
+		double totalPrice1 = selectCategoryAndAddProductToCart(items.get(0), 3, 15) * price1;
+		double totalPrice2 = selectCategoryAndAddProductToCart(items.get(1), 3, 15) * price2;
+		double totalPrice3 = selectCategoryAndAddProductToCart(items.get(2), 3, 15) * price3;
+		double totalPrice4 = selectCategoryAndAddProductToCart(items.get(3), 3, 15) * price4;
+		double totalPrice5 = selectCategoryAndAddProductToCart(items.get(4), 3, 15) * price4;
+		double total = totalPrice1 + totalPrice2 + totalPrice3 + totalPrice4 + totalPrice5;
 
 		navigateToCart();
+		double cartTotal = getCartTotal();
 		removeItemsFromCart();
+		logout();
+		Assert.assertEquals(total, cartTotal, 0.1);  // Tolerance is set to 0.01
 	}
-
+	private double getCartTotal() {
+		WebDriverWait wait = new WebDriverWait(context.driver(), 10);
+		WebElement cartTotalElement = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("body > div.master-wrapper-page > div.master-wrapper-content > div.master-wrapper-main > div > div > div.page-body > div > form > div.cart-footer > div.totals > div.total-info > table > tbody > tr:nth-child(4) > td.cart-total-right > span > span > strong")));
+		String cartTotalText = cartTotalElement.getText();
+		return Double.parseDouble(cartTotalText.replace(",", "")); // Parse the total as a double
+	}
 	private List<User> readUsers(String filename) throws Exception {
 		List<User> users = TestDataProvider.instance.readTestData(filename, User.class);
 		Assert.assertNotEquals(0, users.size());
@@ -212,7 +225,8 @@ public class DemoWebshopTests {
 		return users.get(random.nextInt(users.size()));
 	}
 
-	private void selectCategoryAndAddProductToCart(ShopItem item, int low, int max) {
+	private int selectCategoryAndAddProductToCart(ShopItem item, int low, int max) {
+		int randomNumber;
 		WebDriverWait wait = new WebDriverWait(context.driver(), 10);
 		wait.until(ExpectedConditions.elementToBeClickable(By.linkText(item.getCategory()))).click();
 		if (!item.getSubCategorySelector().isEmpty()) {
@@ -224,18 +238,20 @@ public class DemoWebshopTests {
 
 		// Check if we found an availability label and if the item is out of stock.
 		if (availabilityLabels.isEmpty() || !"Out of stock".equals(availabilityLabels.get(0).getText())) {
-
 			// Item is in stock, so it's safe to set the quantity.
 			WebElement quantityInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.name(item.getQuantityInputId())));
 			quantityInput.clear();
-			quantityInput.sendKeys(String.valueOf(RandomNumbers(low, max)));
+			randomNumber = RandomNumbers(low, max);
+			quantityInput.sendKeys(String.valueOf(randomNumber));
 			JavascriptExecutor executor = (JavascriptExecutor) context.driver();
 			executor.executeScript("$('#" + item.getQuantityInputId() + "').keydown(function(event) { if (event.keyCode == 13) { $('#" + item.getAddToCartButtonId() + "').click(); return false; } });");
 			wait.until(ExpectedConditions.elementToBeClickable(By.id(item.getAddToCartButtonId()))).click();
+			String addedToCartMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("#bar-notification > p"))).getText();
+			Assert.assertTrue(addedToCartMessage.contains("The product has been added to your shopping cart"));
+		}else{
+			return 0;
 		}
-
-		//String addedToCartMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(BAR_NOTIFICATION))).getText();
-		//Assert.assertTrue(addedToCartMessage.contains("The product has been added to your shopping cart"));
+			return randomNumber;
 	}
 
 	public int RandomNumbers(int low, int max) {

@@ -10,11 +10,10 @@ public class ShopItem {
     private String productName;
     private String quantityInputId;
     private String addToCartButtonId;
-
-    private int price;
+    private double price;
 
     public ShopItem(String category, String subCategorySelector, String productName,
-                    String quantityInputId, String addToCartButtonId, int price) {
+                    String quantityInputId, String addToCartButtonId, double price) {
         this.category = category;
         this.subCategorySelector = subCategorySelector;
         this.productName = productName;
@@ -23,7 +22,7 @@ public class ShopItem {
         this.price = price;
     }
 
-    // Getters and setters (optional) for the properties
+    // Getters and setters for the properties
 
     public static List<ShopItem> getItems() {
         if (items == null) {
@@ -31,6 +30,7 @@ public class ShopItem {
         }
         return items;
     }
+
     public String getCategory() {
         return category;
     }
@@ -71,18 +71,28 @@ public class ShopItem {
         this.addToCartButtonId = addToCartButtonId;
     }
 
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
+
     private static void initializeItems() {
         items = new ArrayList<>();
-
+        // Electronics - cellphones
         items.add(new ShopItem("Electronics", "div.sub-category-grid div.item-box:nth-child(2) a[href=\"/cell-phones\"]",
                 "Smartphone", "addtocart_43.EnteredQuantity", "add-to-cart-button-43", 100));
         items.add(new ShopItem("Electronics", "div.sub-category-grid div.item-box:nth-child(2) a[href=\"/cell-phones\"]",
-                "Phone Cover", "addtocart_80.EnteredQuantity", "add-to-cart-button-80", 100));
+                "Phone Cover", "addtocart_80.EnteredQuantity", "add-to-cart-button-80", 10));
         items.add(new ShopItem("Electronics", "div.sub-category-grid div.item-box:nth-child(2) a[href=\"/cell-phones\"]",
-                "Used phone", "addtocart_15.EnteredQuantity", "add-to-cart-button-15", 100));
+                "Used phone", "addtocart_15.EnteredQuantity", "add-to-cart-button-15", 5));
 
+        // Apparel & Shoes - camera, photo
         items.add(new ShopItem("Apparel & Shoes", "", "Blue Jeans", "addtocart_36.EnteredQuantity",
-                "add-to-cart-button-36", 5));
-
+                "add-to-cart-button-36", 1));
+        items.add(new ShopItem("Apparel & Shoes", "", "Casual Golf Belt", "addtocart_40.EnteredQuantity",
+                "add-to-cart-button-40", 1));
     }
 }
