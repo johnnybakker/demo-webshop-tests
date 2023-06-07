@@ -191,12 +191,11 @@ public class DemoWebshopTests {
 		//selectCategoryAndAddProductToCart("Electronics", "div.sub-category-grid div.item-box:nth-child(2) a[href=\"/cell-phones\"]","Smartphone", "addtocart_43.EnteredQuantity", "add-to-cart-button-43");
 		//selectCategoryAndAddProductToCart("Apparel & Shoes","", "Blue Jeans", "addtocart_36.EnteredQuantity", "add-to-cart-button-36");
 		List<ShopItem> items = ShopItem.getItems();
+		selectCategoryAndAddProductToCart(items.get(0), 1, 10);
 
-		ShopItem electronicsItem = items.get(0);
-		selectCategoryAndAddProductToCart(electronicsItem, 1, 10);
+		selectCategoryAndAddProductToCart(items.get(1), 4, 5);
 
-		ShopItem apparelItem = items.get(1);
-		selectCategoryAndAddProductToCart(apparelItem, 4, 5);
+		selectCategoryAndAddProductToCart(items.get(2), 4, 5);
 
 		navigateToCart();
 		removeItemsFromCart();
@@ -220,14 +219,21 @@ public class DemoWebshopTests {
 			wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(item.getSubCategorySelector()))).click();
 		}
 		wait.until(ExpectedConditions.elementToBeClickable(By.linkText(item.getProductName()))).click();
-		WebElement quantityInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.name(item.getQuantityInputId())));
-		quantityInput.clear();
-		Random rand = new Random();
-		int randomNum = rand.nextInt((max - low) + 1) + low;
-		quantityInput.sendKeys(String.valueOf(RandomNumbers(low, max)));
-		JavascriptExecutor executor = (JavascriptExecutor) context.driver();
-		executor.executeScript("$('#" + item.getQuantityInputId() + "').keydown(function(event) { if (event.keyCode == 13) { $('#" + item.getAddToCartButtonId() + "').click(); return false; } });");
-		wait.until(ExpectedConditions.elementToBeClickable(By.id(item.getAddToCartButtonId()))).click();
+		// Check if the item is out of stock.
+		List<WebElement> availabilityLabels = context.driver().findElements(By.cssSelector(".stock .value"));
+
+		// Check if we found an availability label and if the item is out of stock.
+		if (availabilityLabels.isEmpty() || !"Out of stock".equals(availabilityLabels.get(0).getText())) {
+
+			// Item is in stock, so it's safe to set the quantity.
+			WebElement quantityInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.name(item.getQuantityInputId())));
+			quantityInput.clear();
+			quantityInput.sendKeys(String.valueOf(RandomNumbers(low, max)));
+			JavascriptExecutor executor = (JavascriptExecutor) context.driver();
+			executor.executeScript("$('#" + item.getQuantityInputId() + "').keydown(function(event) { if (event.keyCode == 13) { $('#" + item.getAddToCartButtonId() + "').click(); return false; } });");
+			wait.until(ExpectedConditions.elementToBeClickable(By.id(item.getAddToCartButtonId()))).click();
+		}
+
 		//String addedToCartMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(BAR_NOTIFICATION))).getText();
 		//Assert.assertTrue(addedToCartMessage.contains("The product has been added to your shopping cart"));
 	}

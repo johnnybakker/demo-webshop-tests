@@ -73,9 +73,16 @@ public class ShopItem {
 
     private static void initializeItems() {
         items = new ArrayList<>();
+
         items.add(new ShopItem("Electronics", "div.sub-category-grid div.item-box:nth-child(2) a[href=\"/cell-phones\"]",
                 "Smartphone", "addtocart_43.EnteredQuantity", "add-to-cart-button-43", 100));
+        items.add(new ShopItem("Electronics", "div.sub-category-grid div.item-box:nth-child(2) a[href=\"/cell-phones\"]",
+                "Phone Cover", "addtocart_80.EnteredQuantity", "add-to-cart-button-80", 100));
+        items.add(new ShopItem("Electronics", "div.sub-category-grid div.item-box:nth-child(2) a[href=\"/cell-phones\"]",
+                "Used phone", "addtocart_15.EnteredQuantity", "add-to-cart-button-15", 100));
+
         items.add(new ShopItem("Apparel & Shoes", "", "Blue Jeans", "addtocart_36.EnteredQuantity",
                 "add-to-cart-button-36", 5));
+
     }
 }
