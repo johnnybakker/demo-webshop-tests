@@ -83,115 +83,7 @@ public class DemoWebshopTests {
 	}
 
 	@Test
-	public void test1_AddToCart() throws Exception {
-		// Read valid users from datasource
-		List<User> users = TestDataProvider.instance.readTestData("valid_users.csv", User.class);
-		Assert.assertNotEquals(0, users.size());
-		
-		// Open website
-		open();
-		
-		// Test homepage
-		homepage();
-		
-		Random random = new Random();
-		User randomUser = users.get(random.nextInt(users.size()));
-		
-		// Test a random login.
-		login(randomUser);
-
-		// Go to the Cell phones category
-		context.driver().findElement(By.cssSelector(SELECTOR_HEADER_MENU)).click();
-		context.driver().findElement(By.cssSelector(SELECTOR_ELECTRONICS_LINK)).click();
-		WebDriverWait wait = new WebDriverWait(context.driver(), Duration.ofSeconds(10));
-		wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(SELECTOR_SMARTPHONE_IMAGE_LINK))).click();
-
-		// Select the Smartphone category
-		//TODO set random between smartphone/used phone
-		wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Smartphone"))).click();
-
-		// Set the warranty quantity to 5
-		//TODO set random numbers between 2 and 12.
-		WebElement quantityInput = wait.until(ExpectedConditions.presenceOfElementLocated(By.name("addtocart_43.EnteredQuantity")));
-		quantityInput.clear();
-		quantityInput.sendKeys("5");
-
-		// Add smartphones with the specified warranty quantity to the cart
-		JavascriptExecutor executor = (JavascriptExecutor) context.driver();
-		executor.executeScript("$('#addtocart_43_EnteredQuantity').keydown(function(event) { if (event.keyCode == 13) { $('#add-to-cart-button-43').click(); return false; } });");
-		wait.until(ExpectedConditions.elementToBeClickable(By.id("add-to-cart-button-43"))).click();
-
-
-		// Navigate to Apparel & Shoes category
-		context.driver().findElement(By.cssSelector(SELECTOR_HEADER_MENU)).click();
-		context.driver().findElement(By.linkText("Apparel & Shoes")).click();
-
-		// Select Blue Jeans
-		wait.until(ExpectedConditions.elementToBeClickable(By.linkText("Blue Jeans"))).click();
-
-		// Set the warranty quantity to 5
-		//TODO set random numbers between 2 and 12.
-		WebElement quantityInput1 = wait.until(ExpectedConditions.presenceOfElementLocated(By.name("addtocart_36.EnteredQuantity")));
-		quantityInput1.clear();
-		quantityInput1.sendKeys("5");
-
-		// Add smartphones with the specified warranty quantity to the cart
-		JavascriptExecutor executor1 = (JavascriptExecutor) context.driver();
-		executor1.executeScript("$('#addtocart_36_EnteredQuantity').keydown(function(event) { if (event.keyCode == 13) { $('#add-to-cart-button-36').click(); return false; } });");
-		wait.until(ExpectedConditions.elementToBeClickable(By.id("add-to-cart-button-36"))).click();
-
-		// Go to the shopping cart
-		context.driver().findElement(By.cssSelector(SELECTOR_HEADER_MENU)).click();
-		context.driver().findElement(By.cssSelector("#topcartlink a.ico-cart")).click();
-
-		// Get the total amount of the shopping cart
-		WebElement totalAmountElement = wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector(".cart-total-right .product-price")));
-		String totalAmount = totalAmountElement.getText();
-
-		// Select all checkboxes
-		List<WebElement> checkboxes = context.driver().findElements(By.name("removefromcart"));
-		for (WebElement checkbox : checkboxes) {
-			if (!checkbox.isSelected()) {
-				checkbox.click();
-			}
-		}
-
-		// Remove all items from the cart by updating the cart
-		context.driver().findElement(By.name("updatecart")).click();
-	}
-
-	public void open() throws Exception {
-		context.driver().get(WEBSHOP_URL);
-	}
-
-	public void homepage() throws Exception {
-		String title = context.driver().getTitle();
-		Assert.assertEquals(WEBSHOP_TITLE, title);
-	}
-
-	public void login(User user) throws Exception {
-		open();
-
-		context.driver().findElement(By.cssSelector(SELECTOR_LOGIN_LINK)).click();
-
-		Assert.assertEquals(WEBSHOP_URL_LOGIN, context.driver().getCurrentUrl());
-		Assert.assertEquals(WEBSHOP_TITLE_LOGIN, context.driver().getTitle());
-
-		context.driver().findElement(By.cssSelector(SELECTOR_LOGIN_FORM_EMAIL)).sendKeys(user.email);
-		context.driver().findElement(By.cssSelector(SELECTOR_LOGIN_FORM_PASSWORD)).sendKeys(user.password);
-		context.driver().findElement(By.cssSelector(SELECTOR_LOGIN_FORM_SUBMIT)).click();
-
-		homepage();
-
-		Assert.assertEquals(user.email, context.driver().findElement(By.cssSelector(SELECTOR_ACCOUNT_LINK)).getText());
-	}
-
-	public void logout() {
-		context.driver().findElement(By.cssSelector(SELECTOR_LOGOUT_LINK)).click();
-	}
-
-	@Test
-	public void test1_AddToCarts() throws Exception {
+	public void test2_FillShoppingCartAndCheckTotal() throws Exception {
 		List<User> users = readUsers("valid_users.csv");
 		List<Product> products = readProducts("valid_products.csv");
 		
@@ -226,6 +118,36 @@ public class DemoWebshopTests {
 		
 		removeItemsFromCart();
 		logout();
+	}
+
+	public void open() throws Exception {
+		context.driver().get(WEBSHOP_URL);
+	}
+
+	public void homepage() throws Exception {
+		String title = context.driver().getTitle();
+		Assert.assertEquals(WEBSHOP_TITLE, title);
+	}
+
+	public void login(User user) throws Exception {
+		open();
+
+		context.driver().findElement(By.cssSelector(SELECTOR_LOGIN_LINK)).click();
+
+		Assert.assertEquals(WEBSHOP_URL_LOGIN, context.driver().getCurrentUrl());
+		Assert.assertEquals(WEBSHOP_TITLE_LOGIN, context.driver().getTitle());
+
+		context.driver().findElement(By.cssSelector(SELECTOR_LOGIN_FORM_EMAIL)).sendKeys(user.email);
+		context.driver().findElement(By.cssSelector(SELECTOR_LOGIN_FORM_PASSWORD)).sendKeys(user.password);
+		context.driver().findElement(By.cssSelector(SELECTOR_LOGIN_FORM_SUBMIT)).click();
+
+		homepage();
+
+		Assert.assertEquals(user.email, context.driver().findElement(By.cssSelector(SELECTOR_ACCOUNT_LINK)).getText());
+	}
+
+	public void logout() {
+		context.driver().findElement(By.cssSelector(SELECTOR_LOGOUT_LINK)).click();
 	}
 
 	private double getCartTotal() {
