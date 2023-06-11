@@ -7,6 +7,9 @@ import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.CapabilityType;
 import org.openqa.selenium.remote.RemoteWebDriver;
+
+import nl.avans.data.TestDataProvider;
+
 import org.junit.runner.Description;
 
 public class SaucelabsTestContext extends TestContext {
@@ -20,7 +23,8 @@ public class SaucelabsTestContext extends TestContext {
 	private SauceLabsDriverOptions _options;
 	private RemoteWebDriver _driver;
 
-	public SaucelabsTestContext() throws Exception {
+	public SaucelabsTestContext(TestDataProvider provider) throws Exception {
+		super(provider);
 		_options = SauceLabsDriverOptions.ReadFromEnvironment();
 		_driver = null;
 	}

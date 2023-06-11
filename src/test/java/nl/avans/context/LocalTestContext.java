@@ -5,11 +5,14 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
+import nl.avans.data.TestDataProvider;
+
 public class LocalTestContext extends TestContext {
 
 	private WebDriver _driver;
 
-	public LocalTestContext() {
+	public LocalTestContext(TestDataProvider provider) {
+		super(provider);
 		ChromeOptions options = new ChromeOptions();
 		options.setPlatformName(PLATFORM_NAME);
 		options.setBrowserVersion(BROWSER_VERSION);

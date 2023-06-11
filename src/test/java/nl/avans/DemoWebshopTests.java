@@ -1,18 +1,18 @@
 package nl.avans;
 
 
-import nl.avans.data.Product;
 import org.openqa.selenium.By;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 
 import nl.avans.context.TestContext;
-import nl.avans.data.TestDataProvider;
-import nl.avans.data.User;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.NoSuchElementException;
+import nl.avans.data.CsvTestDataProvider;
+import nl.avans.data.models.Product;
+import nl.avans.data.models.User;
+
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -35,11 +35,6 @@ public class DemoWebshopTests {
 	private final String SELECTOR_ACCOUNT_LINK = SELECTOR_HEADER_LINKS + " [href=\"/customer/info\"]";
 	private final String SELECTOR_LOGOUT_LINK = SELECTOR_HEADER_LINKS + " [href=\"/logout\"]";
 	private final String SELECTOR_HEADER_MENU = ".header-menu";
-	private final String SELECTOR_ELECTRONICS_LINK = "a[href=\"/electronics\"]";
-
-	private final String SELECTOR_SMARTPHONE_IMAGE_LINK = "div.sub-category-grid div.item-box:nth-child(2) a[href=\"/cell-phones\"]";
-	;
-	private final String SELECTOR_ADD_TO_CART_BUTTON = "button-1 add-to-cart-button";
 
 	private final String SELECTOR_LOGIN_FORM = "form[action=\"" + PATH_LOGIN + "\"]";
 	private final String SELECTOR_LOGIN_FORM_EMAIL = SELECTOR_LOGIN_FORM + " #Email";
@@ -50,7 +45,7 @@ public class DemoWebshopTests {
 	static final String ADD_TO_SHOPPING_CART_NOK = "Quantity should be positive";
 
 	@Rule
-	public TestContext context = TestContext.Create();
+	public TestContext context = TestContext.Create(new CsvTestDataProvider());
 
 	@Test
 	public void test0_Home() throws Exception {
@@ -64,7 +59,7 @@ public class DemoWebshopTests {
 	public void test1_Login() throws Exception {
 
 		// Read valid users from datasource
-		List<User> users = TestDataProvider.instance.readTestData("users/users.csv", User.class);
+		List<User> users = context.dataProvider().read("users/users", User.class);
 		Assert.assertNotEquals(0, users.size());
 
 		// Open website
@@ -84,25 +79,21 @@ public class DemoWebshopTests {
 
 	@Test
 	public void test2_CaseCheckTotalPrice() throws Exception {
-		List<User> users = readUsers("users/users.csv");
-		List<Product> products_1 = readProducts("products/case_products_1.csv");
-		List<Product> products_2 = readProducts("products/case_products_2.csv");
+		
+		User user = context.dataProvider().read("users/users", User.class).get(0);
+		List<Product> products_1 = context.dataProvider().read("products/case_products_1", Product.class);
+		List<Product> products_2 = context.dataProvider().read("products/case_products_2", Product.class);
 		
 		open();
 		homepage();
 		
-		User randomUser = getRandomUser(users);
-		
-		login(randomUser);
+		login(user);
 		navigateToCart();
 		removeItemsFromCart();
 	
-		final int MIN_ORDER_AMOUNT = 3;
-		final int MAX_ORDER_AMOUNT = 9;
-		
+		final int MIN_ORDER_AMOUNT = 3, MAX_ORDER_AMOUNT = 9;
 		int product_1_index = getRandomInt(0, products_1.size() - 1);
-		int product_2_index = getRandomInt(0, products_2.size() - 1);
-		
+		int product_2_index = getRandomInt(0, products_2.size() - 1);	
 		int product_1_amount = getRandomInt(MIN_ORDER_AMOUNT, MAX_ORDER_AMOUNT);
 		int product_2_amount = getRandomInt(MIN_ORDER_AMOUNT, MAX_ORDER_AMOUNT);
 		
@@ -127,8 +118,8 @@ public class DemoWebshopTests {
 
 	@Test
 	public void test2_FillShoppingCartAndCheckTotal() throws Exception {
-		List<User> users = readUsers("users/users.csv");
-		List<Product> products = readProducts("products/valid_products.csv");
+		List<User> users = context.dataProvider().read("users/users", User.class);
+		List<Product> products = context.dataProvider().read("products/valid_products", Product.class);
 		
 		open();
 		homepage();
@@ -203,18 +194,6 @@ public class DemoWebshopTests {
 		return Double.parseDouble(cartTotalText.replace(",", ".")); // Parse the total as a double
 	}
 
-	private List<User> readUsers(String filename) throws Exception {
-		List<User> users = TestDataProvider.instance.readTestData(filename, User.class);
-		Assert.assertNotEquals(0, users.size());
-		return users;
-	}
-
-	private List<Product> readProducts(String filename) throws Exception {
-		List<Product> products = TestDataProvider.instance.readTestData(filename, Product.class);
-		Assert.assertNotEquals(0, products.size());
-		return products;
-	}
-
 	private User getRandomUser(List<User> users) {
 		Random random = new Random();
 		return users.get(random.nextInt(users.size()));
@@ -230,14 +209,20 @@ public class DemoWebshopTests {
 		//Wait for element waiter
 		WebDriverWait wait = new WebDriverWait(context.driver(), Duration.ofSeconds(10));
 		
+		Actions actions = new Actions(context.driver());
+
 		// Find category url link
 		By categorySelector = By.cssSelector(String.format(".top-menu [href=\"/%s\"]", item.getCategory()));
-		wait.until(ExpectedConditions.elementToBeClickable(categorySelector)).click();
+		WebElement category = context.driver().findElement(categorySelector);
+		actions.moveToElement(category);
+		wait.until(ExpectedConditions.elementToBeClickable(category)).click();
 
 		// If it has a sub category then navigate further
 		if(item.getSubCategory().isEmpty() == false) {
 			By subcategorySelector = By.cssSelector(String.format(".sub-category-item [href=\"/%s\"]", item.getSubCategory()));
-			wait.until(ExpectedConditions.elementToBeClickable(subcategorySelector)).click();
+			WebElement subcategory = context.driver().findElement(subcategorySelector);
+			actions.moveToElement(subcategory);
+			wait.until(ExpectedConditions.elementToBeClickable(subcategory)).click();
 		}
 		
 		// Find item link and click it
@@ -299,6 +284,10 @@ public class DemoWebshopTests {
 		String expectedNotificationText = quantity > 0 ? ADD_TO_SHOPPING_CART_OK : ADD_TO_SHOPPING_CART_NOK;
 		Assert.assertEquals(expectedNotificationText, notificationText);
 
+		By notificationBarCloseSelector = By.cssSelector("#bar-notification > .close");
+		wait.until(ExpectedConditions.visibilityOfElementLocated(notificationBarCloseSelector)).click();
+		wait.until(ExpectedConditions.invisibilityOfElementLocated(notificationBarTextSelector));
+
 		return quantity;
 	}
 
@@ -309,7 +298,7 @@ public class DemoWebshopTests {
 
 	private void removeItemsFromCart() {
 		
-		WebDriverWait wait = new WebDriverWait(context.driver(), Duration.ofSeconds(10));
+		//WebDriverWait wait = new WebDriverWait(context.driver(), Duration.ofSeconds(10));
 		
 		By summary = By.cssSelector(".order-summary-content");
 		String summaryText = context.driver().findElement(summary).getText();

@@ -1,4 +1,4 @@
-package nl.avans.data;
+package nl.avans.data.models;
 
 import com.opencsv.bean.CsvBindByName;
 
