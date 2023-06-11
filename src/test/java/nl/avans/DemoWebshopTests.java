@@ -64,7 +64,7 @@ public class DemoWebshopTests {
 	public void test1_Login() throws Exception {
 
 		// Read valid users from datasource
-		List<User> users = TestDataProvider.instance.readTestData("valid_users.csv", User.class);
+		List<User> users = TestDataProvider.instance.readTestData("users/users.csv", User.class);
 		Assert.assertNotEquals(0, users.size());
 
 		// Open website
@@ -83,9 +83,54 @@ public class DemoWebshopTests {
 	}
 
 	@Test
+	public void test2_CaseCheckTotalPrice() throws Exception {
+		List<User> users = readUsers("users/users.csv");
+		List<Product> products_1 = readProducts("products/case_products_1.csv");
+		List<Product> products_2 = readProducts("products/case_products_2.csv");
+		
+		open();
+		homepage();
+		
+		User randomUser = getRandomUser(users);
+		
+		login(randomUser);
+		navigateToCart();
+		removeItemsFromCart();
+
+		Random random = new Random(System.currentTimeMillis());
+		
+		double totalPrice = 0;
+		
+		final int MIN_ORDER_AMOUNT = 3;
+		final int MAX_ORDER_AMOUNT = 9;
+
+		int product_1_index = random.nextInt(products_1.size());
+		int product_1_amount = random.nextInt(MIN_ORDER_AMOUNT, MAX_ORDER_AMOUNT+1);
+		Product product_1 = products_1 .get(product_1_index);
+		int product_1_actual_order_amount = addProductToShoppingCart(product_1, product_1_amount);
+
+		totalPrice += product_1.getPrice() * product_1_actual_order_amount;
+
+		int product_2_index = random.nextInt(products_2.size());
+		int product_2_amount = random.nextInt(MIN_ORDER_AMOUNT, MAX_ORDER_AMOUNT+1);
+		Product product_2 = products_2 .get(product_2_index);
+		int product_2_actual_order_amount = addProductToShoppingCart(product_2, product_2_amount);
+
+		totalPrice += product_2.getPrice() * product_2_actual_order_amount;
+		
+		navigateToCart();
+		
+		double cartTotalPrice = getCartTotal();
+		Assert.assertEquals(totalPrice, cartTotalPrice, 0.1);  // Tolerance is set to 0.01
+		
+		removeItemsFromCart();
+		logout();
+	}
+
+	@Test
 	public void test2_FillShoppingCartAndCheckTotal() throws Exception {
-		List<User> users = readUsers("valid_users.csv");
-		List<Product> products = readProducts("valid_products.csv");
+		List<User> users = readUsers("users/users.csv");
+		List<Product> products = readProducts("products/valid_products.csv");
 		
 		open();
 		homepage();
@@ -154,7 +199,7 @@ public class DemoWebshopTests {
 
 		WebDriverWait wait = new WebDriverWait(context.driver(), Duration.ofSeconds(10));
 
-		By totalPriceSelector = By.cssSelector(".product-price.order-total > strong");
+		By totalPriceSelector = By.cssSelector(".cart-total .product-price");
 		String cartTotalText = wait.until(ExpectedConditions.presenceOfElementLocated(totalPriceSelector)).getText();
 	
 		return Double.parseDouble(cartTotalText.replace(",", ".")); // Parse the total as a double

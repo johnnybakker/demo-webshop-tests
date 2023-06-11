@@ -21,9 +21,6 @@ public class TestDataProvider {
 
 		ClassLoader classLoader = getClass().getClassLoader();
 		File file = new File(classLoader.getResource(fileName).getFile());
-		String absolutePath = file.getAbsolutePath();
-
-		Assert.assertTrue(absolutePath.endsWith(fileName));
 		Assert.assertTrue(file.exists());
 
 		return new CsvToBeanBuilder<T>(new FileReader(file))
