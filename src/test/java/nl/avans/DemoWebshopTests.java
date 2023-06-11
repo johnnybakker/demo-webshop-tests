@@ -96,28 +96,26 @@ public class DemoWebshopTests {
 		login(randomUser);
 		navigateToCart();
 		removeItemsFromCart();
-
-		Random random = new Random(System.currentTimeMillis());
-		
-		double totalPrice = 0;
-		
+	
 		final int MIN_ORDER_AMOUNT = 3;
 		final int MAX_ORDER_AMOUNT = 9;
-
-		int product_1_index = random.nextInt(products_1.size());
-		int product_1_amount = random.nextInt(MIN_ORDER_AMOUNT, MAX_ORDER_AMOUNT+1);
-		Product product_1 = products_1 .get(product_1_index);
-		int product_1_actual_order_amount = addProductToShoppingCart(product_1, product_1_amount);
-
-		totalPrice += product_1.getPrice() * product_1_actual_order_amount;
-
-		int product_2_index = random.nextInt(products_2.size());
-		int product_2_amount = random.nextInt(MIN_ORDER_AMOUNT, MAX_ORDER_AMOUNT+1);
-		Product product_2 = products_2 .get(product_2_index);
-		int product_2_actual_order_amount = addProductToShoppingCart(product_2, product_2_amount);
-
-		totalPrice += product_2.getPrice() * product_2_actual_order_amount;
 		
+		int product_1_index = getRandomInt(0, products_1.size() - 1);
+		int product_2_index = getRandomInt(0, products_2.size() - 1);
+		
+		int product_1_amount = getRandomInt(MIN_ORDER_AMOUNT, MAX_ORDER_AMOUNT);
+		int product_2_amount = getRandomInt(MIN_ORDER_AMOUNT, MAX_ORDER_AMOUNT);
+		
+		Product product_1 = products_1 .get(product_1_index);
+		Product product_2 = products_2 .get(product_2_index);
+		
+		int product_1_actual_order_amount = addProductToShoppingCart(product_1, product_1_amount);
+		int product_2_actual_order_amount = addProductToShoppingCart(product_2, product_2_amount);
+		
+		double totalPrice = 0;
+		totalPrice += product_1.getPrice() * product_1_actual_order_amount;
+		totalPrice += product_2.getPrice() * product_2_actual_order_amount;
+
 		navigateToCart();
 		
 		double cartTotalPrice = getCartTotal();
@@ -330,6 +328,12 @@ public class DemoWebshopTests {
 		context.driver().findElement(By.name("updatecart")).click();
 		//String removedFromCartMessage = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(BAR_NOTIFICATION))).getText();
 		//Assert.assertTrue(removedFromCartMessage.contains("Your Shopping Cart is empty!"));
+	}
+
+	private int getRandomInt(int min, int max) {
+		Random random = new Random(System.currentTimeMillis());
+		int range = (max - min) + 1;
+		return min + random.nextInt(range);
 	}
 }
 
