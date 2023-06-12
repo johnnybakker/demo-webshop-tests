@@ -17,11 +17,11 @@ jobs:
       with:
         dotnet-version: 6.0.x
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore DetermineShippingCost/Tests/Tests.csproj 
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build DetermineShippingCost/Tests/Tests.csproj --no-restore
     - name: Test
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test DetermineShippingCost/Tests/Tests.csproj --no-build --verbosity normal 
 
   saucelabs:
     runs-on: ubuntu-latest
