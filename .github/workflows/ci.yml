@@ -1,4 +1,4 @@
-name: UI Test for DemoWebshop
+name: TestSuite for DemoWebshop
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  saucelabs:
     runs-on: ubuntu-latest
     env:
         TEST_PLATFORM_NAME: Windows 11
