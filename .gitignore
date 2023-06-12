@@ -11,3 +11,6 @@ buildNumber.properties
 .project
 .classpath
 .vscode
+**/bin/
+**/obj/
+**/.idea/
