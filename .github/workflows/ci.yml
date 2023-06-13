@@ -79,7 +79,7 @@ jobs:
 
     - name: "Prepare NeoLoad test"
       run: >
-            neoload login --url https://neoload-api.saas.neotys.com/ 3bd2a51e47601f222c41a09edabea93d8c810bf9343083be \
+            neoload login --url https://neoload-api.saas.neotys.com/ 579d0fd1ebc40b7fe1d0af8dc8d0cea9ec29fe914b67edea \
                     test-settings --zone "EUGGCP" --scenario 'HappyFlow' createorpatch "Github Test With NeoLoad CLI" \
                     project --path ${{ github.workspace }}${{ env.neoload-projectfile-location }}/${{ env.neoload-projectfile-name }} upload
         
